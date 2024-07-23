@@ -103,8 +103,37 @@ def list_to_dict_with_empty_lists(input_list):
     # 使用字典推导式来创建字典  
     return {item: [] for item in input_list}
 
+def create_excel_tables(data_dict):  
+    # 初始化两个DataFrame来存储DOI和Article Title  
+    df_doi = pd.DataFrame()  
+    df_title = pd.DataFrame()  
+  
+    # 遍历字典  
+    for key, value_list in data_dict.items():  
+        # 如果value_list不为空  
+        if value_list:  
+            # 提取DOI和Article Title  
+            dois = [item.get('DOI', '') for item in value_list]  
+            titles = [item.get('Article Title', '') for item in value_list]  
+  
+            # 创建一个临时DataFrame，并将列名设置为当前键  
+            temp_doi = pd.DataFrame(dois, columns=[key])  
+            temp_title = pd.DataFrame(titles, columns=[key])  
+  
+            # 将临时DataFrame追加到主DataFrame  
+            df_doi = pd.concat([df_doi, temp_doi], axis=1)  
+            df_title = pd.concat([df_title, temp_title], axis=1)  
+  
+    # 写入Excel文件  
+    with pd.ExcelWriter('output_dois.xlsx', engine='openpyxl') as writer:  
+        df_doi.to_excel(writer, sheet_name='DOIs')  
+  
+    with pd.ExcelWriter('output_titles.xlsx', engine='openpyxl') as writer:  
+        df_title.to_excel(writer, sheet_name='Article Titles')  
+
 # 示例用法  
-folder_path = 'E:\临时\自动word部分内容改拟真手写体宏封包\队列\excel2test'  # 替换为你的文件夹路径  
+# folder_path = 'E:\yuan\work\sjPaper\队列\excel2test'  # 替换为你的文件夹路径  
+folder_path = 'E:\yuan\work\sjPaper\队列\excel\wos'  # 替换为你的文件夹路径  
 abstracts_lists = read_articles_from_all_excel_files(folder_path)
 # 词表
 words_list = allFromExcel('forTest2.xlsx')
@@ -122,17 +151,23 @@ for text in  abstracts_lists:
         total_suc += 1
         for i in matches:
             result_dict[i].append({'Article Title': text['Article Title'], 'DOI': text['DOI']})
-    else:
+    elif (not matches) and text['Abstract'] != '':
         total_fal += 1
         fal_list.append(text['Article Title'])
+    else:
+        if total_num > 1:
+            total_num -= 1
+        else:
+            pass
     
 print(f"成功率：{(total_suc/total_num)*100}%")
 print(f"失败率：{(total_fal/total_num)*100}%")
-# print(result_dict)
+print(result_dict)
 for k, v in result_dict.items():
     k_num = len(v)
     print(f"{k}对应论文共{k_num}篇")
-print(f"首个未录入论文：{fal_list[0]}")
+print(f"首个未录入论文：{fal_list[:20]}")
+print(f"成功数：{total_suc}")
 
-
+create_excel_tables(result_dict)
     # print(matches)
