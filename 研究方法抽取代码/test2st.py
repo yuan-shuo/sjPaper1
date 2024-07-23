@@ -115,6 +115,7 @@ result_dict = list_to_dict_with_empty_lists(words_list)
 total_num = len(abstracts_lists)
 total_suc = 0
 total_fal = 0
+fal_list = []
 for text in  abstracts_lists:
     matches = find_matches_in_text(text['Abstract'], words_list)
     if matches:
@@ -123,12 +124,15 @@ for text in  abstracts_lists:
             result_dict[i].append({'Article Title': text['Article Title'], 'DOI': text['DOI']})
     else:
         total_fal += 1
+        fal_list.append(text['Article Title'])
     
 print(f"成功率：{(total_suc/total_num)*100}%")
 print(f"失败率：{(total_fal/total_num)*100}%")
-print(result_dict)
+# print(result_dict)
 for k, v in result_dict.items():
     k_num = len(v)
     print(f"{k}对应论文共{k_num}篇")
+print(f"首个未录入论文：{fal_list[0]}")
+
 
     # print(matches)
