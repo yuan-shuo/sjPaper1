@@ -1,0 +1,113 @@
+def find_matches_in_text(text, words_list):  
+    """  
+    在文本中查找列表内的元素，不区分大小写比对。  
+      
+    参数:  
+    text (str): 要搜索的文本。  
+    words_list (list of str): 要在文本中查找的单词列表。  
+      
+    返回:  
+    list of str: 匹配成功的字符串列表（在原始列表中）。  
+    """  
+    # 将文本转换为小写，以便不区分大小写地搜索  
+    text_lower = text.lower()  
+      
+    # 初始化一个空列表来存储匹配到的单词  
+    matches = []  
+      
+    # 遍历单词列表  
+    for word in words_list:  
+        # 将单词也转换为小写，以便进行比较  
+        word_lower = word.lower()  
+          
+        # 如果文本包含该单词（不区分大小写），则添加到匹配列表中  
+        if word_lower in text_lower:  
+            matches.append(word)  
+      
+    # 返回匹配到的单词列表  
+    return matches
+
+import os  
+import pandas as pd  
+  
+def read_articles_from_all_excel_files(folder_path):  
+    """  
+    从指定文件夹路径下的所有Excel文件中读取'Article Title'、'DOI'和'Abstract'列的数据。  
+    非字符串类型的数据将被转换为空字符串。  
+  
+    参数:  
+    folder_path (str): 包含Excel文件的文件夹路径。  
+  
+    返回:  
+    list of dicts: 每个字典包含一行数据的'Article Title'、'DOI'和'Abstract'。  
+    """  
+    all_articles = []  
+  
+    for filename in os.listdir(folder_path):  
+        if filename.endswith('.xlsx') or filename.endswith('.xls'):  
+            file_path = os.path.join(folder_path, filename)  
+  
+            try:  
+                df = pd.read_excel(file_path)  
+  
+                # 检查所需的列是否存在  
+                required_columns = ['Article Title', 'DOI', 'Abstract']  
+                missing_columns = [col for col in required_columns if col not in df.columns]  
+                if missing_columns:  
+                    print(f"Warning: '{filename}' missing columns: {', '.join(missing_columns)}")  
+                    continue  
+  
+                # 转换非字符串类型为空字符串  
+                for col in required_columns:  
+                    df[col] = df[col].fillna('').astype(str)  
+  
+                # 将DataFrame转换为字典列表  
+                articles = df[required_columns].to_dict(orient='records')  
+                all_articles.extend(articles)  
+  
+            except Exception as e:  
+                print(f"Error reading '{filename}': {e}")  
+  
+    return all_articles
+
+def list_to_dict_with_empty_lists(input_list):  
+    """  
+    将输入列表转换为一个字典，其中键是列表中的元素，值是一个空列表。  
+  
+    参数:  
+    input_list (list): 输入的列表。  
+  
+    返回:  
+    dict: 键为输入列表元素，值为空列表的字典。  
+    """  
+    # 使用字典推导式来创建字典  
+    return {item: [] for item in input_list}
+
+# 示例用法  
+folder_path = 'E:\临时\自动word部分内容改拟真手写体宏封包\队列\excel2test'  # 替换为你的文件夹路径  
+abstracts_lists = read_articles_from_all_excel_files(folder_path)
+# 词表
+words_list = ["LIFE Child study"]
+# 各词的统计列表, 列表内含字典
+result_dict = list_to_dict_with_empty_lists(words_list) 
+# 总计
+total_num = len(abstracts_lists)
+total_suc = 0
+total_fal = 0
+for text in  abstracts_lists:
+    matches = find_matches_in_text(text['Abstract'], words_list)
+    if matches:
+        total_suc += 1
+        for i in matches:
+            result_dict[i].append({'Article Title': text['Article Title'], 'DOI': text['DOI']})
+    else:
+        total_fal += 1
+    
+print(f"成功率：{(total_suc/total_num)*100}%")
+print(f"失败率：{(total_fal/total_num)*100}%")
+print(result_dict)
+for k, v in result_dict.items():
+    k_num = len(v)
+    print(f"{k}对应论文共{k_num}篇")
+
+    # print(matches)
