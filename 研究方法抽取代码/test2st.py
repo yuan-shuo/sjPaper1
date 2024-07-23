@@ -1,3 +1,23 @@
+def allFromExcel(file_path):  
+    """  
+    从Excel文件中读取'Abstract'列的所有数据。  
+      
+    参数:  
+    file_path (str): Excel文件的路径。  
+      
+    返回:  
+    list of str: 包含每行'Abstract'数据的列表。  
+    """  
+    # 使用pandas读取Excel文件  
+    df = pd.read_excel(file_path)  
+      
+    # 假设'Abstract'列存在于DataFrame中  
+    # 如果列名不同，请相应地更改它  
+    abstracts = df['Abstract'].tolist()  
+      
+    # 返回包含所有'Abstract'数据的列表  
+    return abstracts
+
 def find_matches_in_text(text, words_list):  
     """  
     在文本中查找列表内的元素，不区分大小写比对。  
@@ -87,7 +107,8 @@ def list_to_dict_with_empty_lists(input_list):
 folder_path = 'E:\临时\自动word部分内容改拟真手写体宏封包\队列\excel2test'  # 替换为你的文件夹路径  
 abstracts_lists = read_articles_from_all_excel_files(folder_path)
 # 词表
-words_list = ["LIFE Child study"]
+words_list = allFromExcel('forTest2.xlsx')
+# words_list = ["LIFE Child study"]
 # 各词的统计列表, 列表内含字典
 result_dict = list_to_dict_with_empty_lists(words_list) 
 # 总计
